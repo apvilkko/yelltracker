@@ -1,0 +1,11 @@
+{
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "extends": "google",
+  "rules": {
+    "arrow-parens": ["error", "as-needed"]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "yelltracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "babel-tape-runner src/**/*.test.js",
+    "test:watch": "onchange src -- npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apvilkko/yelltracker.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/apvilkko/yelltracker/issues"
+  },
+  "homepage": "https://github.com/apvilkko/yelltracker#readme",
+  "devDependencies": {
+    "babel-eslint": "^8.2.3",
+    "babel-preset-env": "^1.6.1",
+    "babel-tape-runner": "^2.0.1",
+    "eslint": "^4.19.1",
+    "eslint-config-google": "^0.9.1",
+    "onchange": "^3.3.0",
+    "tape": "^4.9.0"
+  },
+  "dependencies": {}
+}
