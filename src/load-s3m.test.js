@@ -35,10 +35,10 @@ test('instruments and patterns are loaded', t => {
   t.equal(pprint(pattern[0][0]), 'A#4 06 32 .00');
   t.equal(pattern[0][0].channel, 0);
 
-  t.equal(pprint(pattern[9][1]), '... .. .. D10');
-  t.equal(pattern[9][1].channel, 1);
+  t.equal(pprint(pattern[9][0]), '... .. .. D10');
+  t.equal(pattern[9][0].channel, 1);
 
   pattern = result.patterns[9];
-  t.equal(pprint(pattern[22][3]), 'F-4 02 .. GF0');
-  t.equal(pattern[22][3].channel, 3);
+  t.equal(pprint(pattern[22][2]), 'F-4 02 .. GF0');
+  t.equal(pattern[22][2].channel, 3);
 });

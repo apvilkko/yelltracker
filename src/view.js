@@ -13,16 +13,21 @@ const SEMITONES = {
   11: 'B-',
 };
 
+const NOTE_OFF = 0xfe;
+
 const lpad = value => (value < 10 ? '0' + value : value);
 
 const pprintVolume = value => (value || value === 0 ? lpad(value) : '..');
 
 const pprintNote = p =>
-  SEMITONES[p.semitone] + p.octave + ' ' + lpad(p.instrument);
+  (p.note === NOTE_OFF ? '^^.' : SEMITONES[p.semitone] + p.octave) +
+  ' ' +
+  (p.instrument === 0 ? '..' : lpad(p.instrument));
 
 const pprintEffect = p =>
   p.command
-    ? String.fromCharCode(p.command + 0x40) + p.info.toString(16).toUpperCase()
+    ? String.fromCharCode(p.command + 0x40) +
+      lpad(p.info.toString(16)).toUpperCase()
     : '.00';
 
 export const pprint = p =>
@@ -34,13 +39,23 @@ export const pprint = p =>
   ' ' +
   pprintEffect(p);
 
-export const printPattern = p => {
+export const printPattern = (p, numChannels = 4) => {
   const out = [];
   p.forEach(row => {
-    row.forEach((x, i) => {
-      out.push(pprint(x));
+    let ch = 0;
+    while (true) {
+      const thisCh = row.find(x => x.channel === ch);
+      if (thisCh) {
+        out.push(pprint(thisCh));
+      } else {
+        out.push('... .. .. .00');
+      }
       out.push(' | ');
-    });
+      ch++;
+      if (ch >= numChannels) {
+        break;
+      }
+    }
     out.push('\n');
   });
   console.log(out.join(''));

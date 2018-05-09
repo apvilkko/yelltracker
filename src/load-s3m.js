@@ -162,7 +162,9 @@ const readPattern = data => start => {
       x.command = packedData[j++];
       x.info = packedData[j++];
     }
-    row.push(x);
+    if (x.what !== 0) {
+      row.push(x);
+    }
   }
   return ret;
 };
@@ -185,7 +187,6 @@ export default input => {
     ret.error = 'invalid header';
   }
   let j = ORDER_LIST_START;
-  console.log('read orderList from ', j);
   ret.orderList = toArray(input, null, j, (j += ret.orderCount));
   ret.ptrInstruments = toArray(
     input,
