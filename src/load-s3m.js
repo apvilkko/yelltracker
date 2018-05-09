@@ -1,5 +1,8 @@
 // Scream Tracker file format reader
-// ref: http://www.shikadi.net/moddingwiki/S3M_Format
+// refs:
+// http://www.shikadi.net/moddingwiki/S3M_Format
+// https://wiki.multimedia.cx/index.php/Scream_Tracker_3_Module#File_Format
+// https://github.com/OpenMPT/openmpt/blob/master/soundlib/Load_s3m.cpp
 
 import {
   readString,
@@ -131,50 +134,14 @@ const readInstrument = data => start => {
   return ret;
 };
 
-const SEMITONES = {
-  0: 'C-',
-  1: 'C#',
-  2: 'D-',
-  3: 'D#',
-  4: 'E-',
-  5: 'F-',
-  6: 'F#',
-  7: 'G-',
-  8: 'G#',
-  9: 'A-',
-  10: 'A#',
-  11: 'B-',
-};
-
-const lpad = value => (value < 10 ? '0' + value : value);
-
-const pprintVolume = value => (value || value === 0 ? lpad(value) : '--');
-
-const pprintNote = p =>
-  SEMITONES[p.semitone] + p.octave + ' ' + lpad(p.instrument);
-
-const pprintEffect = p => (p.command ? p.command + '' + p.info : '.00');
-
-const pprint = p => {
-  console.log(
-    p.channel +
-      ' ' +
-      (p.note ? pprintNote(p) : '---') +
-      ' ' +
-      pprintVolume(p.volume) +
-      ' ' +
-      pprintEffect(p)
-  );
-};
-
 const readPattern = data => start => {
   let j = start;
   const ret = [];
-  const packedLen = uint16le(data.subarray(j, ++j));
-  const packedData = data.subarray(++j, j + packedLen - 2);
+  uint16le(data.subarray(j, ++j)); // don't trust packedLen
+  const packedData = data.subarray(++j);
   j = 0;
   let row = [];
-  while (j < packedData.length) {
+  while (j < packedData.length && ret.length < 64) {
     const x = {};
     x.what = packedData[j++];
     if (x.what === 0) {
@@ -235,7 +202,6 @@ export default input => {
 
   ret.instruments = readInstruments(ret.ptrInstruments, input);
   ret.patterns = readPatterns(ret.ptrPatterns, input);
-  ret.patterns[0].map(row => row.map(pprint));
 
   return ret;
 };

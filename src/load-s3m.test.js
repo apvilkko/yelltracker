@@ -1,6 +1,7 @@
 import test from 'tape';
 import loadS3m from './load-s3m';
 import {readFile} from './testutils';
+import {pprint} from './view';
 
 test('header is loaded', t => {
   t.plan(3);
@@ -14,8 +15,8 @@ test('header is loaded', t => {
   t.deepEqual(result.orderList, ORDER);
 });
 
-test('instruments are loaded', t => {
-  t.plan(5);
+test('instruments and patterns are loaded', t => {
+  t.plan(12);
 
   const input = readFile('./testdata/PM_NOVA.S3M');
   const result = loadS3m(input);
@@ -23,6 +24,21 @@ test('instruments are loaded', t => {
   t.equal(result.title, 'Nova');
   t.equal(result.instruments[0].filename, 'cpurplem.667');
   t.equal(result.instruments[4].title, 'for epic megagames');
-  t.equal(result.instruments[5].length,
-    result.instruments[5].sampleData.length);
+  t.equal(
+    result.instruments[5].length,
+    result.instruments[5].sampleData.length
+  );
+
+  let pattern = result.patterns[8];
+
+  t.equal(pattern.length, 64);
+  t.equal(pprint(pattern[0][0]), 'A#4 06 32 .00');
+  t.equal(pattern[0][0].channel, 0);
+
+  t.equal(pprint(pattern[9][1]), '... .. .. D10');
+  t.equal(pattern[9][1].channel, 1);
+
+  pattern = result.patterns[9];
+  t.equal(pprint(pattern[22][3]), 'F-4 02 .. GF0');
+  t.equal(pattern[22][3].channel, 3);
 });
