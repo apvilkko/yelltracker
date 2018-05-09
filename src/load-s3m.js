@@ -131,8 +131,80 @@ const readInstrument = data => start => {
   return ret;
 };
 
+const SEMITONES = {
+  0: 'C-',
+  1: 'C#',
+  2: 'D-',
+  3: 'D#',
+  4: 'E-',
+  5: 'F-',
+  6: 'F#',
+  7: 'G-',
+  8: 'G#',
+  9: 'A-',
+  10: 'A#',
+  11: 'B-',
+};
+
+const lpad = value => (value < 10 ? '0' + value : value);
+
+const pprintVolume = value => (value || value === 0 ? lpad(value) : '--');
+
+const pprintNote = p =>
+  SEMITONES[p.semitone] + p.octave + ' ' + lpad(p.instrument);
+
+const pprintEffect = p => (p.command ? p.command + '' + p.info : '.00');
+
+const pprint = p => {
+  console.log(
+    p.channel +
+      ' ' +
+      (p.note ? pprintNote(p) : '---') +
+      ' ' +
+      pprintVolume(p.volume) +
+      ' ' +
+      pprintEffect(p)
+  );
+};
+
+const readPattern = data => start => {
+  let j = start;
+  const ret = [];
+  const packedLen = uint16le(data.subarray(j, ++j));
+  const packedData = data.subarray(++j, j + packedLen - 2);
+  j = 0;
+  let row = [];
+  while (j < packedData.length) {
+    const x = {};
+    x.what = packedData[j++];
+    if (x.what === 0) {
+      ret.push(row);
+      row = [];
+    }
+    x.channel = x.what & 0x1f;
+    if (x.what & 0x20) {
+      x.note = packedData[j++];
+      x.instrument = packedData[j++];
+      x.octave = (x.note >> 4) & 0xf;
+      x.semitone = x.note & 0xf;
+    }
+    if (x.what & 0x40) {
+      x.volume = packedData[j++];
+    }
+    if (x.what & 0x80) {
+      x.command = packedData[j++];
+      x.info = packedData[j++];
+    }
+    row.push(x);
+  }
+  return ret;
+};
+
 const readInstruments = (parapointers, data) =>
   parapointers.map(toPointer).map(readInstrument(data));
+
+const readPatterns = (parapointers, data) =>
+  parapointers.map(toPointer).map(readPattern(data));
 
 export default input => {
   const ret = {error: null};
@@ -162,6 +234,8 @@ export default input => {
   );
 
   ret.instruments = readInstruments(ret.ptrInstruments, input);
+  ret.patterns = readPatterns(ret.ptrPatterns, input);
+  ret.patterns[0].map(row => row.map(pprint));
 
   return ret;
 };
