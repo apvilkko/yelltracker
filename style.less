@@ -1,0 +1,181 @@
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
+}
+body {
+  line-height: 1;
+}
+ol,
+ul {
+  list-style: none;
+}
+blockquote,
+q {
+  quotes: none;
+}
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: '';
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+@color-green: #00b200;
+@color-grey: #9a9692;
+@color-gold: #ffdf86;
+@color-beige: #a69255;
+@color-brown: #514528;
+
+/*
+COLORS
+#a69255 main pane bg
+#ffdf86 title text, help text, pane border light
+#514528 label text, pane border dark, row numbers
+#00b200 info text
+#9a9692 pattern data text
+#49413c row highlight 1
+#302c28 row hightlight 2
+*/
+
+/* 0.0125 = 1/80, monospace font width/height scale is ~60% */
+@char-width: 1.25vw / 0.6 * 0.98;
+/* @char-height: 1.25vw / 0.6 * 0.9; */
+
+body {
+  font-family: VT323, monospace;
+  font-size: @char-width;
+  background: black;
+  color: @color-grey;
+  line-height: @char-width * 0.72;
+}
+
+@block-width: 1.2vw;
+
+.view span {
+  display: inline-block;
+  width: @block-width;
+  height: calc(@block-width / 0.8);
+  overflow: hidden;
+  vertical-align: top;
+  text-align: center;
+  /* box-shadow: inset 1px 1px red; */
+}
+
+.gold {
+  color: @color-gold;
+}
+.green {
+  color: @color-green;
+}
+.black-bg {
+  background: black;
+}
+.beige-bg {
+  background: @color-beige;
+}
+.brown {
+  color: @color-brown;
+}

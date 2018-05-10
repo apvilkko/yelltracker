@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "parcel index.html",
     "test": "babel-tape-runner src/**/*.test.js",
     "test:watch": "onchange src -- npm test"
   },
@@ -19,13 +20,19 @@
   "homepage": "https://github.com/apvilkko/yelltracker#readme",
   "devDependencies": {
     "babel-eslint": "^8.2.3",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-preset-env": "^1.6.1",
     "babel-tape-runner": "^2.0.1",
     "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
+    "less": "^3.0.4",
     "onchange": "^3.3.0",
+    "parcel": "^1.8.1",
     "prettier": "^1.12.1",
     "tape": "^4.9.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "preact": "^8.2.9",
+    "unistore": "^3.0.5"
+  }
 }
