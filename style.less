@@ -141,27 +141,44 @@ COLORS
 */
 
 /* 0.0125 = 1/80, monospace font width/height scale is ~60% */
-@char-width: 1.25vw / 0.6 * 0.98;
+@char-width: 1.25vw / 0.6 * 1.1;
 /* @char-height: 1.25vw / 0.6 * 0.9; */
+@y-scale: 0.6;
+@block-width: 1.2vw;
+@block-height: @block-width / 0.6;
 
 body {
   font-family: VT323, monospace;
   font-size: @char-width;
   background: black;
   color: @color-grey;
-  line-height: @char-width * 0.72;
 }
 
-@block-width: 1.2vw;
+#app {
+  position: relative;
+}
+
+.view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: scale(1, @y-scale);
+  transform-origin: left top;
+  z-index: -1;
+}
 
 .view span {
   display: inline-block;
   width: @block-width;
-  height: calc(@block-width / 0.8);
+  height: @block-height;
   overflow: hidden;
   vertical-align: top;
   text-align: center;
   /* box-shadow: inset 1px 1px red; */
+}
+
+.row {
+  height: @block-height * 0.92;
 }
 
 .gold {

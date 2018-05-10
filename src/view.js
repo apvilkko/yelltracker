@@ -82,6 +82,7 @@ export const renderView = (currentView, view) => {
   console.log('renderView', currentView, view);
   const chars = [];
   for (let y = 0; y < HEIGHT; ++y) {
+    const row = [];
     for (let x = 0; x < WIDTH; ++x) {
       const el = view[y][x];
       const char = el.text;
@@ -92,9 +93,9 @@ export const renderView = (currentView, view) => {
       if (el.bg) {
         className.push(`${el.bg}-bg`);
       }
-      chars.push(<span className={className.join('')}>{char || ' '}</span>);
+      row.push(<span className={className.join('')}>{char || ' '}</span>);
     }
-    chars.push(<br />);
+    chars.push(<div className="row">{row}</div>);
   }
   return chars;
 };
