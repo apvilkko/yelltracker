@@ -25,14 +25,22 @@
     "babel-tape-runner": "^2.0.1",
     "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-config-standard-preact": "^1.1.6",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.7.0",
+    "eslint-plugin-react": "^7.8.2",
+    "eslint-plugin-standard": "^3.1.0",
     "less": "^3.0.4",
     "onchange": "^3.3.0",
-    "parcel": "^1.8.1",
+    "parcel-bundler": "^1.8.1",
     "prettier": "^1.12.1",
     "tape": "^4.9.0"
   },
   "dependencies": {
     "preact": "^8.2.9",
+    "preact-compat": "^3.18.0",
     "unistore": "^3.0.5"
   }
 }

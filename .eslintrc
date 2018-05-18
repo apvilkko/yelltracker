@@ -4,9 +4,23 @@
     "ecmaVersion": 6,
     "sourceType": "module"
   },
-  "extends": "google",
+  "extends": ["standard", "standard-preact"],
+  "globals": {
+    "Blob": true,
+    "Worker": true,
+  },
   "rules": {
     "arrow-parens": ["error", "as-needed"],
-    "require-jsdoc": 0
+    "require-jsdoc": 0,
+    "semi": ["error", "always"],
+    "jsx-quotes": ["error", "prefer-double"],
+    "object-curly-spacing": ["error", "never"],
+    "comma-dangle": ["error", {
+      "arrays": "always-multiline",
+      "objects": "always-multiline",
+      "imports": "always-multiline",
+      "exports": "always-multiline",
+      "functions": "ignore",
+    }]
   }
 }

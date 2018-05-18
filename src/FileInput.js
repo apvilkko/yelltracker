@@ -7,8 +7,8 @@ class FileInput extends Component {
     const loadModule = this.props.loadModule;
     const files = evt.target.files;
     const filename = evt.target.value;
-    const reader = new FileReader();
-    reader.onload = function() {
+    const reader = new window.FileReader();
+    reader.onload = function () {
       const arrayBuffer = this.result;
       const array = new Uint8Array(arrayBuffer);
       loadModule(array, filename);
@@ -16,7 +16,7 @@ class FileInput extends Component {
     reader.readAsArrayBuffer(files[0]);
   };
 
-  render() {
+  render () {
     return <input type="file" accept=".s3m" onChange={this.handleChange} />;
   }
 }

@@ -79,7 +79,7 @@ export const createCharView = () => {
 };
 
 export const renderView = (currentView, view) => {
-  console.log('renderView', currentView, view);
+  // console.log('renderView', currentView, view);
   const chars = [];
   for (let y = 0; y < HEIGHT; ++y) {
     const row = [];
