@@ -1,7 +1,7 @@
 import test from 'tape';
 import loadS3m from './load-s3m';
 import {readFile} from './testutils';
-import {pprint} from './view';
+import {pprint} from './pprint';
 
 test('header is loaded', t => {
   t.plan(3);
