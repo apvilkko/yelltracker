@@ -57,6 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
-testdata/
+testdata/ARMANI.S3M
+testdata/PM_NOVA.S3M
 .cache/
 dist/
+*.asd

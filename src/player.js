@@ -1,4 +1,6 @@
-import COMMANDS, {NOTE_OFF} from './commands';
+import COMMANDS, {COMMAND_IMPL} from './commands';
+import playSample from './playSample';
+import noteToFreq from './noteToFreq';
 
 const gain = (ctx, value = 1.0) => {
   const gain = ctx.createGain();
@@ -17,13 +19,6 @@ const setupAudio = runtime => {
 };
 
 const MONO = 1;
-const TUNING = 440;
-const A4 = 69;
-
-export const noteToFreq = (octave, semitone) => {
-  const m = octave * 12 + semitone;
-  return Math.pow(2, (m - A4) / 12) * TUNING;
-};
 
 const setupBuffers = runtime => {
   const ctx = runtime.audio.ctx;
@@ -32,10 +27,14 @@ const setupBuffers = runtime => {
   runtime.mod.channelSettings.forEach((channelSetting, index) => {
     if (channelSetting !== 255) {
       const channelGain = gain(ctx, 0.5);
+      const sampleGain = gain(ctx);
+      sampleGain.connect(channelGain);
       channelGain.connect(runtime.audio.mixBus);
+      console.log('creating channel', index);
       runtime.audio.channels.push({
         setting: channelSetting,
         gain: channelGain,
+        sampleGain: sampleGain,
       });
     }
   });
@@ -53,64 +52,16 @@ const setupBuffers = runtime => {
       for (let i = 0; i < instrument.buffer.length; ++i) {
         data[i] = (sampleDataView[i] - 128) / 128.0;
       }
-      const sampleGain = gain(ctx);
-      runtime.audio.instruments[index] = {sampleGain};
     }
   });
 };
 
-const clampVolume = volume => Math.min(volume / 63.0, 1.0);
-
-const playSample = (runtime, note, when = 0) => {
-  if (!runtime || !runtime.mod) {
-    return false;
-  }
-  // console.log('playSample', note);
-  const channel = runtime.audio.channels[note.channel] || {};
-  const isDebug = typeof note === 'number';
-  const index = isDebug
-    ? note
-    : (note.instrument === 0 ? channel.lastInstrument : note.instrument) - 1;
-  const inst = runtime.mod.instruments[index];
-  const bufferSource = runtime.audio.ctx.createBufferSource();
-  const rtInst = runtime.audio.instruments[index];
-  const noteOff = note.note === NOTE_OFF;
-  if (!rtInst && !noteOff) {
-    console.error('No instrument', note);
-    return;
-  }
-  const oldBufferSource = channel.bufferSource;
-  if (oldBufferSource) {
-    oldBufferSource.stop(when);
-  }
-  if (rtInst) {
-    bufferSource.connect(rtInst.sampleGain);
-    bufferSource.buffer = inst.buffer;
-    const noteFreq = isDebug
-      ? noteToFreq(4, 0)
-      : noteToFreq(note.octave, note.semitone);
-    const rate =
-      noteFreq / inst.c2freq * inst.c2spd / runtime.audio.ctx.sampleRate;
-    bufferSource.playbackRate.setValueAtTime(
-      rate,
-      runtime.audio.ctx.currentTime
-    );
-    if (!isDebug) {
-      channel.bufferSource = bufferSource;
-      channel.lastInstrument =
-        note.instrument > 0 ? note.instrument : channel.lastInstrument;
-      const instVolume = clampVolume(inst.volume || 63);
-      const noteVolume =
-        typeof note.volume === 'number' ? clampVolume(note.volume) : 1.0;
-      rtInst.sampleGain.gain.setValueAtTime(noteVolume * instVolume, when);
+const stop = (runtime, when = 0) => {
+  runtime.audio.channels.forEach(channel => {
+    if (channel && channel.bufferSource) {
+      channel.bufferSource.stop(when);
     }
-    const destination = isDebug ? runtime.audio.debugBus : channel.gain;
-    rtInst.sampleGain.connect(destination);
-    bufferSource.start(when);
-  }
-};
-
-const stop = runtime => {
+  });
   runtime.sequencer.playing = false;
   runtime.sequencer.startTime = 0;
   runtime.sequencer.songPosition = 0;
@@ -152,25 +103,35 @@ const getPattern = (mod, songPosition) => {
   return mod.patterns[index];
 };
 
-const applyCommand = (runtime, note) => {
-  if (note.command) {
-    const command = COMMANDS[note.command];
-    console.log('command', command, note.info);
-    switch (command) {
-      case 'A':
-        runtime.sequencer.speed = note.info;
-        break;
-      case 'T':
-        runtime.sequencer.tempo = note.info;
-        break;
-      default:
-        break;
-    }
+const applyCommand = (runtime, note, ...rest) => {
+  const command = COMMANDS[note.command];
+  console.log('command', command, note.info);
+  const handler = COMMAND_IMPL[command];
+  if (handler) {
+    handler(runtime, note, ...rest);
+  } else {
+    // console.error(`command ${command} not handled!`);
   }
 };
 
-// Must match worker tick length
-const TICK_INTERVAL_S = 0.2;
+const getPlayOptions = note => {
+  const isInstrument = typeof note.instrument === 'number';
+  const isCommand = !!note.command;
+  let shouldPlay = true;
+  if (isInstrument && isCommand && COMMANDS[note.command] === 'G') {
+    shouldPlay = false;
+  }
+  return {
+    isInstrument,
+    isCommand,
+    shouldPlay,
+    // If instrument changes while using tone portamento (G) the new
+    // sample seems to start from where the previous left off
+    offset: 0, // TODO
+  };
+};
+
+const noteMemory = {};
 
 export const tick = runtime => {
   // console.log('tick');
@@ -183,10 +144,14 @@ export const tick = runtime => {
     const now = runtime.audio.ctx.currentTime;
     // real bpm = tempo * 6 / speed, 4 rows per beat
     const tickLen = 60.0 / (seq.tempo * 6.0 * 4.0);
-    const numTicks = Math.floor(TICK_INTERVAL_S / tickLen);
+    const elapsed = now - (seq.lastProcessed.time || seq.startTime);
+    const numTicks = Math.floor(elapsed / tickLen);
     const stopTick = seq.lastProcessed.tick + 1 + numTicks;
+    let when;
     for (let i = seq.lastProcessed.tick + 1; i < stopTick; ++i) {
       let currentPattern = getPattern(runtime.mod, seq.songPosition);
+      const tickCount = i - (seq.lastProcessed.tick + 1);
+      when = now + tickCount * tickLen;
       seq.subtick++;
       if (seq.subtick === seq.speed) {
         seq.subtick = 0;
@@ -200,14 +165,17 @@ export const tick = runtime => {
             break;
           }
         }
-        const tickCount = i - (seq.lastProcessed.tick + 1);
         // entered new row, trigger notes
         // console.log('trigger', seq.songPosition, seq.row);
         for (let j = 0; j < currentPattern[seq.row].length; ++j) {
           const note = currentPattern[seq.row][j];
-          applyCommand(runtime, note);
-          if (typeof note.instrument === 'number') {
-            playSample(runtime, note, now + tickCount * tickLen);
+          const options = getPlayOptions(note);
+          if (options.isInstrument) {
+            playSample(runtime, note, when, options);
+            noteMemory[note.channel] = note;
+          }
+          if (options.isCommand) {
+            applyCommand(runtime, note, when, {tickLen});
           }
         }
       }
@@ -217,7 +185,7 @@ export const tick = runtime => {
       time: now,
     };
     if (shouldStop) {
-      stop(runtime);
+      stop(runtime, when);
     }
   }
 };
